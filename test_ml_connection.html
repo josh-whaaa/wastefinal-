@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test ML Server Connection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <style>
+        .status-card { transition: all 0.3s ease; }
+        .status-card:hover { transform: translateY(-2px); }
+        .log-container { max-height: 400px; overflow-y: auto; background: #f8f9fa; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">🔗 Test ML Server Connection</h1>
+                <p class="text-center text-muted mb-5">Test connection between your PHP system and Heroku ML server</p>
+            </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Connection Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="connectionStatus">
+                            <div class="col-md-4 mb-3">
+                                <div class="card status-card border">
+                                    <div class="card-body text-center">
+                                        <i class="material-symbols-rounded text-primary mb-2" style="font-size: 2rem;">cloud</i>
+                                        <h6>ML Server</h6>
+                                        <span class="badge bg-secondary" id="serverStatus">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card status-card border">
+                                    <div class="card-body text-center">
+                                        <i class="material-symbols-rounded text-success mb-2" style="font-size: 2rem;">trending_up</i>
+                                        <h6>Waste Forecast</h6>
+                                        <span class="badge bg-secondary" id="wasteStatus">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card status-card border">
+                                    <div class="card-body text-center">
+                                        <i class="material-symbols-rounded text-warning mb-2" style="font-size: 2rem;">health_and_safety</i>
+                                        <h6>Health Risk</h6>
+                                        <span class="badge bg-secondary" id="healthStatus">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Test Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h6>Server Information</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">ML Server URL</label>
+                                    <input type="text" class="form-control" id="serverUrl" value="https://wastetracker-3e73822f0171.herokuapp.com" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">PHP System URL</label>
+                                    <input type="text" class="form-control" id="phpUrl" value="https://bagowastetracker.bccbsis.com" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h6>Test Actions</h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="testConnection()">
+                                        <i class="material-symbols-rounded me-2">refresh</i>
+                                        Test All Connections
+                                    </button>
+                                    <button class="btn btn-success" onclick="testWasteForecast()">
+                                        <i class="material-symbols-rounded me-2">trending_up</i>
+                                        Test Waste Forecast
+                                    </button>
+                                    <button class="btn btn-warning" onclick="testHealthRisk()">
+                                        <i class="material-symbols-rounded me-2">health_and_safety</i>
+                                        Test Health Risk
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Test Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="testResults">
+                            <div class="text-center text-muted py-4">
+                                <i class="material-symbols-rounded mb-3" style="font-size: 3rem; opacity: 0.3;">science</i>
+                                <h6>No tests run yet</h6>
+                                <p class="mb-0">Click the test buttons above to check ML server connection</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Test Logs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="log-container p-3 rounded" id="testLogs">
+                            <div class="text-center text-muted">
+                                <i class="material-symbols-rounded mb-2" style="font-size: 2rem; opacity: 0.3;">description</i>
+                                <p class="mb-0">No logs yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="dashboard_management/admin_dashboard.php" class="btn btn-primary me-3">
+                    <i class="material-symbols-rounded me-2">dashboard</i>
+                    Back to Dashboard
+                </a>
+                <a href="api/get_waste_forecast.php?lookback_days=7" class="btn btn-success" target="_blank">
+                    <i class="material-symbols-rounded me-2">open_in_new</i>
+                    Test API Direct
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let logs = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🚀 ML Connection Test initialized');
+            testConnection();
+        });
+
+        // Test all connections
+        async function testConnection() {
+            addLog('🔍 Testing ML server connection...');
+            
+            try {
+                const response = await fetch('test_remote_ml.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('serverStatus', data.tests.server_health.available ? 'success' : 'danger', 
+                                data.tests.server_health.available ? 'Connected' : 'Failed');
+                    
+                    if (data.tests.waste_forecast && data.tests.waste_forecast.status === 'success') {
+                        updateStatus('wasteStatus', 'success', 'Working');
+                    } else {
+                        updateStatus('wasteStatus', 'danger', 'Failed');
+                    }
+                    
+                    if (data.tests.health_risk && data.tests.health_risk.status === 'success') {
+                        updateStatus('healthStatus', 'success', 'Working');
+                    } else {
+                        updateStatus('healthStatus', 'danger', 'Failed');
+                    }
+                    
+                    displayResults('Connection Test Results', data);
+                    addLog('✅ Connection test completed');
+                    
+                    // Show recommendations
+                    if (data.recommendations) {
+                        data.recommendations.forEach(rec => addLog(rec));
+                    }
+                } else {
+                    addLog('❌ Connection test failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                addLog('❌ Connection test error: ' + error.message);
+                updateStatus('serverStatus', 'danger', 'Error');
+                updateStatus('wasteStatus', 'danger', 'Error');
+                updateStatus('healthStatus', 'danger', 'Error');
+            }
+        }
+
+        // Test waste forecast
+        async function testWasteForecast() {
+            addLog('🔄 Testing waste forecast API...');
+            
+            try {
+                const response = await fetch('api/get_waste_forecast.php?lookback_days=7');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults('Waste Forecast Test', data);
+                    addLog('✅ Waste forecast test successful');
+                } else {
+                    addLog('❌ Waste forecast test failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                addLog('❌ Waste forecast test error: ' + error.message);
+            }
+        }
+
+        // Test health risk
+        async function testHealthRisk() {
+            addLog('🔄 Testing health risk API...');
+            
+            try {
+                const response = await fetch('api/get_health_risk_ml.php?lookback_days=7');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults('Health Risk Test', data);
+                    addLog('✅ Health risk test successful');
+                } else {
+                    addLog('❌ Health risk test failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                addLog('❌ Health risk test error: ' + error.message);
+            }
+        }
+
+        // Update status badge
+        function updateStatus(elementId, type, text) {
+            const element = document.getElementById(elementId);
+            element.className = `badge bg-${type}`;
+            element.textContent = text;
+        }
+
+        // Display test results
+        function displayResults(title, data) {
+            const container = document.getElementById('testResults');
+            
+            let html = `
+                <div class="mb-3">
+                    <h6>${title}</h6>
+                    <div class="alert alert-info">
+                        <strong>Success:</strong> ${data.success}<br>
+                        <strong>Timestamp:</strong> ${data.timestamp}<br>
+                        ${data.model_info ? `<strong>Model:</strong> ${data.model_info.type}<br>` : ''}
+                        ${data.model_info ? `<strong>ML Server:</strong> ${data.model_info.ml_server || 'Unknown'}<br>` : ''}
+                        ${data.forecasts ? `<strong>Forecasts:</strong> ${data.forecasts.length}<br>` : ''}
+                        ${data.predictions ? `<strong>Predictions:</strong> ${data.predictions.length}<br>` : ''}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h6>Raw Response</h6>
+                    <pre class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Add log entry
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.unshift(`[${timestamp}] ${message}`);
+            
+            // Keep only last 20 logs
+            if (logs.length > 20) {
+                logs = logs.slice(0, 20);
+            }
+            
+            updateLogs();
+        }
+
+        // Update logs display
+        function updateLogs() {
+            const container = document.getElementById('testLogs');
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="material-symbols-rounded mb-2" style="font-size: 2rem; opacity: 0.3;">description</i>
+                        <p class="mb-0">No logs yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            logs.forEach(log => {
+                html += `<div class="small mb-1">${log}</div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

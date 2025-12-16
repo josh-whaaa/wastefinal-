@@ -1,0 +1,12 @@
+# Health Risk Classification Model Dependencies
+pandas>=1.3.0
+numpy>=1.21.0
+scikit-learn>=1.0.0
+scipy>=1.7.0
+
+# Optional: For better performance
+numba>=0.56.0
+
+# For data visualization (if needed)
+matplotlib>=3.4.0
+seaborn>=0.11.0
